@@ -55,6 +55,12 @@ jobs :
         id : runCompositeAction
         uses : T4dP0les/consoleApp/actions/getChangedFiles@main
 
+      - name : dump env vars
+        id : envVarsList
+        shell : pwsh
+        run : |
+          get-childitem env:
+
       - name : list modified files
         id : runPWSH
         shell : pwsh
@@ -94,7 +100,7 @@ jobs :
         uses : T4dP0les/consoleApp/actions/createRelease@main
         with : 
           build_number : ${{ env.build_number }}
-          rest_api_auth : ${{ secrets.GITPOSTAUTH }}
+          rest_api_auth : ${{ secrets.caller_github_token }}
           github_api_url : ${{ github.api_url }}
           github_repository : ${{ github.repository }}
 
@@ -114,7 +120,7 @@ jobs :
             generate_release_notes = $false
           }
           $headers = @{
-            Authorization="Bearer ${{ secrets.GITPOSTAUTH }}"
+            Authorization="Bearer ${{ secrets.caller_github_token }}"
           }
           $releasePost = $releaseHT | convertto-json
           $uri = "{0}/repos/{1}/releases" -f "${{ github.api_url }}", "${{ github.repository }}"
@@ -129,7 +135,7 @@ jobs :
         uses : T4dP0les/consoleApp/actions/uploadAsset@main
         with : 
           build_number : ${{ env.build_number }}
-          rest_api_auth : ${{ secrets.GITPOSTAUTH }}
+          rest_api_auth : ${{ secrets.caller_github_token }}
           github_api_url : ${{ github.api_url }}
           github_repository : ${{ github.repository }}
           release_id : ${{ steps.delegatedCreateRelease.outputs.release_id }}
