@@ -22,9 +22,9 @@ on :
         description : stuff
         required : true
 
-permissions:
-  actions: write  
-
+#permissions:
+#  actions: write  
+permissions: write-all
 env : 
   build_number : 1.0.${{ GITHUB.RUN_NUMBER }}
   
