@@ -109,7 +109,7 @@ jobs :
         id : delegatedCreateRelease
         uses : T4dP0les/sharedWorkflows/actions/createRelease@main
         with : 
-          build_number : ${{ env.build_number }}
+          build_number : ${{ env.build_number }}-rc
           rest_api_auth : ${{ secrets.caller_github_token }}
           github_api_url : ${{ github.api_url }}
           github_repository : ${{ github.repository }}
