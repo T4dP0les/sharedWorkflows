@@ -42,7 +42,7 @@ runs :
         }
 
         $headers = @{
-          Authorization="Bearer $authToken"
+          Authorization="Bearer $env:authToken"
         }
         $releasePost = $releaseHT | convertto-json
         write-host "baseURL : $baseURL"
