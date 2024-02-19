@@ -1,0 +1,57 @@
+name : upload asset to release
+description : add another set of files to the existing default asset
+
+branding :
+  icon : 'cpu'
+  color : 'yellow'
+
+inputs :
+  build_number :
+    description : version derived from the github run number
+    required : true
+  rest_api_auth : 
+    description : token to be able to access to the POST rest api
+    required : true
+  github_api_url :
+    description : base url to get access to the rest apis
+    required : true
+  github_repository :
+    description : current organisation and repository name
+    required : true
+  release_id : 
+    description : the unique id of the previously created release 
+    required : true
+  application_name :
+    description : l
+    required : true
+  package_full_path : 
+    description : l
+    required : false 
+
+runs : 
+  using : composite
+  steps : 
+    - name : upload to release
+      id : uploadAsset
+      shell : pwsh
+      run : |
+        $headers = @{
+          Authorization="Bearer $authToken"
+        }
+        $uploadURI = "$env:baseURL" -replace('api','uploads')
+        $packageName = "$env:appName`.$env:buildNumber`.zip"
+        $uri = "{0}/repos/{1}/releases/{2}/assets?name={3}" -f "$uploadURI", "$env:orgRepos", "$env:releaseID", "$env:packageName" 
+        write-output $uri
+        if ([string]::IsNullOrEmpty($env:packageLoc)) {
+          $packageLoc = $env:HOME/artefact/$packageName
+        }
+        $asset = invoke-restmethod -uri $uri -method 'POST' -headers $headers -InFile $packageLoc -ContentType 'multipart/form-data' 
+        $asset | convertto-json
+      env :
+        buildNumber : ${{ inputs.build_number }}
+        authToken : ${{ inputs.rest_api_auth }}
+        baseURL : ${{ inputs.github_api_url }}
+        orgRepos : ${{ inputs.github_repository }}
+        releaseID : ${{ inputs.release_id }}
+        appName : ${{ inputs.application_name }}
+        packageLoc : ${{ inputs.package_full_path }}

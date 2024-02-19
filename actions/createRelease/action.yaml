@@ -1,0 +1,60 @@
+name : create release
+description : create a placeholder in the repos to receive the runtime produced by the "Build
+
+branding :
+  icon : 'speaker'
+  color : 'green'
+
+inputs : 
+  build_number :
+    description : version derived from the github run number
+    required : true
+  rest_api_auth : 
+    description : token to be able to access to the POST rest api
+    required : true
+  github_api_url :
+    description : base url to get access to the rest apis
+    required : true
+  github_repository :
+    description : current organisation and repository name
+    required : true
+    
+outputs : 
+  release_id : 
+    description : id of the release returned by the call to the rest api
+    value : ${{ steps.createRelease.outputs.releaseID }}
+
+runs : 
+  using : composite
+  steps : 
+    - name : create release
+      id : createRelease
+      shell : pwsh
+      run : |
+        $releaseHT = @{ 
+          tag_name = "v$buildNumber"
+          target_commitish = "main"
+          name = "v$buildNumber"
+          body = "Description of the release"
+          draft = $false
+          prerelease = $false
+          generate_release_notes = $false
+        }
+
+        $headers = @{
+          Authorization="Bearer $authToken"
+        }
+        $releasePost = $releaseHT | convertto-json
+        write-host "baseURL : $baseURL"
+        write-host "env baseURL : $env:baseURL"
+        write-host "{{ env baseURL }} : ${{ env.baseURL}}"
+        $uri = "{0}/repos/{1}/releases" -f "$env:baseURL", "$env:orgRepos"
+        $releaseObj = invoke-restmethod -uri $uri -method 'POST' -body $env:releasePost -headers $headers
+        $releaseObj | convertto-json
+        $releaseID = $releaseObj.id
+        write-output "releaseID=$releaseID" | out-file $env:GITHUB_OUTPUT -encoding utf8 -append
+      env :
+        buildNumber : ${{ inputs.build_number }}
+        authToken : ${{ inputs.rest_api_auth }}
+        baseURL : ${{ inputs.github_api_url }}
+        orgRepos : ${{ inputs.github_repository }}

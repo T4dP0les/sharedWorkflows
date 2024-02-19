@@ -1,0 +1,164 @@
+name : Get PR Contents
+
+on :
+  pull_request : 
+    branches : 
+      - main
+      - feature/*
+    paths-ignore: 
+      - '.github/**'
+          
+  workflow_dispatch : 
+    inputs :
+      logLevel : 
+        description : Input Value at time the workflow is triggered
+        default : warning
+        type : choice 
+        options : ['off', 'info', 'warning', 'error', 'crash']
+
+  workflow_call : 
+    secrets:
+      github_token : ${{ secrets.GITHUB_TOKEN }}
+
+      
+env : 
+  build_number : 1.0.${{ GITHUB.RUN_NUMBER }}
+  
+jobs : 
+  extractPRContents :
+    outputs :
+      createRelease : ${{ steps.runPWSH.outputs.createRelease }}
+      releaseId : ${{ steps.createRelease.outputs.releaseId }}
+
+        
+    runs-on : ubuntu-latest
+    steps :
+      - name : checkout
+        uses : actions/checkout@main
+        with :
+          fetch-depth : 1      
+
+      - name: setup dotnet 60
+        uses: actions/setup-dotnet@main
+        with:
+          dotnet-version: 6.0.x
+
+      - name: build the application
+        shell : pwsh
+        run: |
+          new-item -path $env:HOME/artefact -type directory -force
+          dotnet build consoleApp.csproj /p:Configuration=$env:Configuration /p:outdir=$env:HOME/artefact
+      
+      - name : run composite action
+        id : runCompositeAction
+        uses : T4dP0les/consoleApp/actions/getChangedFiles@main
+
+      - name : list modified files
+        id : runPWSH
+        shell : pwsh
+        run : |
+          $eventName = "${{ github.event_name }}"
+          write-host "Build trigger : $eventName"
+          if ("$eventName" -eq "pull_request") {
+            $createRelease = $true
+            # write-host does not work as it seems to write directly to the console.
+            # write-output works 
+            write-output "createRelease=true" | out-file $env:GITHUB_OUTPUT -encoding utf8 -append
+            #GITHUB_REF_NAME=12/merge
+            #GITHUB_REPOSITORY=T4dP0les/consoleApp
+            #GITHUB_API_URL=https://api.github.com
+            $prID = ("${{ github.ref_name }}" -split('/'))[0]
+            $uri = "{0}/repos/{1}/pulls/{2}/commits" -f "${{ github.api_url }}", "${{ github.repository }}", "$prID"
+            write-host "URI $uri"
+            $prCommits = invoke-restmethod -uri $uri -method 'GET'
+            foreach($curCommit in $prCommits) {
+              $commitContents = invoke-restmethod -uri $curCommit.url -method 'GET'
+              foreach ($curFile in $commitContents.files) {
+                write-host "Was Modified : " $curFile.filename
+              }
+            }
+          } else {
+            $createRelease = $false
+          }
+
+      - name: zip 
+        shell : pwsh
+        run : |
+          Compress-Archive -path $env:HOME/artefact -DestinationPath $env:HOME/artefact/ConsoleApp.zip
+          get-childitem -path $env:HOME/artefact
+
+      - name : delegated create release 
+        id : delegatedCreateRelease
+        uses : T4dP0les/consoleApp/actions/createRelease@main
+        with : 
+          build_number : ${{ env.build_number }}
+          rest_api_auth : ${{ secrets.GITPOSTAUTH }}
+          github_api_url : ${{ github.api_url }}
+          github_repository : ${{ github.repository }}
+
+
+      - name : create release
+        if : ${{ false }}
+        id : createRelease
+        shell : pwsh
+        run : |
+          $releaseHT = @{ 
+            tag_name = "v${{ env.build_number }}"
+            target_commitish = "main"
+            name = "v${{ env.build_number }}"
+            body = "Description of the release"
+            draft = $false
+            prerelease = $false
+            generate_release_notes = $false
+          }
+          $headers = @{
+            Authorization="Bearer ${{ secrets.GITPOSTAUTH }}"
+          }
+          $releasePost = $releaseHT | convertto-json
+          $uri = "{0}/repos/{1}/releases" -f "${{ github.api_url }}", "${{ github.repository }}"
+          $releaseObj = invoke-restmethod -uri $uri -method 'POST' -body $releasePost -headers $headers
+          $releaseObj | convertto-json
+          $releaseID = $releaseObj.id
+          write-output "releaseId=$releaseID" | out-file $env:GITHUB_OUTPUT -encoding utf8 -append
+
+
+      - name : delegated upload to release
+        id : delegatedUploadAsset
+        uses : T4dP0les/consoleApp/actions/uploadAsset@main
+        with : 
+          build_number : ${{ env.build_number }}
+          rest_api_auth : ${{ secrets.GITPOSTAUTH }}
+          github_api_url : ${{ github.api_url }}
+          github_repository : ${{ github.repository }}
+          release_id : ${{ steps.delegatedCreateRelease.outputs.release_id }}
+          application_name : consoleApp
+          package_full_path : $env:HOME/artefact/ConsoleApp.zip
+
+      - name : upload to release
+        if : ${{ false }}
+        id : uploadAsset
+        shell : pwsh
+        run : |
+          $headers = @{
+            Authorization="Bearer ${{ secrets.GITPOSTAUTH }}"
+          }
+          $uploadURI = "${{ github.api_url }}" -replace('api','uploads')
+          $uri = "{0}/repos/{1}/releases/{2}/assets?name={3}" -f "$uploadURI", "${{ github.repository }}", "${{ steps.createRelease.outputs.releaseId }}", "ConsoleApp.${{ env.build_number }}.zip" 
+          write-output $uri
+          $asset = invoke-restmethod -uri $uri -method 'POST' -headers $headers -InFile $env:HOME/artefact/ConsoleApp.zip -ContentType 'multipart/form-data' 
+          $asset | convertto-json
+
+  release :
+    needs : extractPRContents
+    if : ${{ needs.extractPRContents.outputs.createRelease }}
+    runs-on : ubuntu-latest
+    steps : 
+      - name : dump file vars
+        shell : pwsh
+        run : |
+          get-content $env:GITHUB_OUTPUT
+    
+      - name : get var from previous job
+        shell : pwsh
+        run : |
+          write-host "${{ needs.extractPRContents.outputs.createRelease }}"

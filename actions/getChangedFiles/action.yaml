@@ -1,0 +1,30 @@
+name: get changed files
+description: will report the code from the all in one action when done and tested
+
+runs:
+  using: "composite"
+  steps :
+    - name : 'run powershell'
+      shell : pwsh
+      run : |
+        $eventName = "${{ github.event_name }}"
+        write-host "Build trigger : $eventName"
+        if ("$eventName" -eq "pull_request") {
+          $createRelease = $true
+          write-host "createRelease=true" | out-file $env:GITHUB_ENV -encoding utf8 -append
+          #GITHUB_REF_NAME=12/merge
+          #GITHUB_REPOSITORY=T4dP0les/consoleApp
+          #GITHUB_API_URL=https://api.github.com
+          $prID = ("${{ github.ref_name }}" -split('/'))[0]
+          $uri = "{0}/repos/{1}/pulls/{2}/commits" -f "${{ github.api_url }}", "${{ github.repository }}", "$prID"
+          write-host "URI $uri"
+          $prCommits = invoke-restmethod -uri $uri -method 'GET'
+          foreach($curCommit in $prCommits) {
+            $commitContents = invoke-restmethod -uri $curCommit.url -method 'GET'
+            foreach ($curFile in $commitContents.files) {
+              write-host "Was Modified : " $curFile.filename
+            }
+          }
+        } else {
+          $createRelease = $false
+        }
