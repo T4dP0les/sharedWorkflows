@@ -49,7 +49,7 @@ runs :
         write-host "env baseURL : $env:baseURL"
         write-host "{{ env baseURL }} : ${{ env.baseURL}}"
         $uri = "{0}/repos/{1}/releases" -f "$env:baseURL", "$env:orgRepos"
-        $releaseObj = invoke-restmethod -uri $uri -method 'POST' -body $env:releasePost -headers $headers
+        $releaseObj = invoke-restmethod -uri $uri -method 'POST' -body $releasePost -headers $headers
         $releaseObj | convertto-json
         $releaseID = $releaseObj.id
         write-output "releaseID=$releaseID" | out-file $env:GITHUB_OUTPUT -encoding utf8 -append
