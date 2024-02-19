@@ -24,6 +24,9 @@ outputs :
     description : id of the release returned by the call to the rest api
     value : ${{ steps.createRelease.outputs.releaseID }}
 
+permissions:
+  actions: write
+  
 runs : 
   using : composite
   steps : 
