@@ -35,9 +35,9 @@ runs :
       shell : pwsh
       run : |
         $releaseHT = @{ 
-          tag_name = "v$buildNumber"
+          tag_name = "v$env:buildNumber"
           target_commitish = "main"
-          name = "v$buildNumber"
+          name = "v$env:buildNumber"
           body = "Description of the release"
           draft = $false
           prerelease = $false
