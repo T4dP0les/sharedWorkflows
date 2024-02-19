@@ -110,7 +110,7 @@ jobs :
 
 
       - name : create release
-        if : ${{ false }}
+        if : ${{ failure() || false }}
         id : createRelease
         shell : pwsh
         run : |
