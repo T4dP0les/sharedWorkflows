@@ -50,6 +50,7 @@ runs :
         $releasePost = $releaseHT | convertto-json
         write-host "baseURL : $baseURL"
         write-host "env baseURL : $env:baseURL"
+        write-host $releasePost 
         write-host "{{ env baseURL }} : ${{ env.baseURL}}"
         $uri = "{0}/repos/{1}/releases" -f "$env:baseURL", "$env:orgRepos"
         $releaseObj = invoke-restmethod -uri $uri -method 'POST' -body $releasePost -headers $headers
