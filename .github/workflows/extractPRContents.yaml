@@ -152,7 +152,8 @@ jobs :
           application_name : consoleApp
           package_full_path : $env:HOME/artefact/ConsoleApp.zip
 
-      - name : upload to release
+      - name : check for failure
+        if : ${{ failure() }}
         shell : pwsh
         run : |
           write-host "delegatedUploadAsset result : ${{ steps.delegatedUploadAsset.conclusion }}"
