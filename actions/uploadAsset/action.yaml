@@ -40,6 +40,10 @@ runs :
         }
         $uploadURI = "$env:baseURL" -replace('api','uploads')
         $packageName = "$env:appName`.$env:buildNumber`.zip"
+        write-host "packageName =  $packageName"
+        $packageName = "$env:appName" + "." + "$env:buildNumber" + ".zip"
+        write-host "packageName =  $packageName"
+
         $uri = "{0}/repos/{1}/releases/{2}/assets?name={3}" -f "$uploadURI", "$env:orgRepos", "$env:releaseID", "$env:packageName" 
         write-output $uri
         if ([string]::IsNullOrEmpty("$env:packageLoc")) {
