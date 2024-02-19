@@ -43,8 +43,10 @@ runs :
         $uri = "{0}/repos/{1}/releases/{2}/assets?name={3}" -f "$uploadURI", "$env:orgRepos", "$env:releaseID", "$env:packageName" 
         write-output $uri
         if ([string]::IsNullOrEmpty("$env:packageLoc")) {
-          $packageLoc = $env:HOME/artefact/$packageName
+          # this fails at parse time
+          #$packageLoc = $env:HOME/artefact/$packageName
           write-host "null or empty $packageLoc"
+          $packageLoc = /home/runner/artefact/$packageName
         } else {
           write-host "NOT null or empty $packageLoc"
         }
