@@ -28,6 +28,11 @@ inputs :
     description : l
     required : false 
 
+
+permissions:
+  actions: write
+
+  
 runs : 
   using : composite
   steps : 
