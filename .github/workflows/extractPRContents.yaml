@@ -39,6 +39,7 @@ jobs :
     outputs :
       createRelease : ${{ steps.runPWSH.outputs.createRelease }}
       releaseId : ${{ steps.createRelease.outputs.releaseId }}
+      artfactBasePath : ${{ steps.packageArtefact.outputs.artfactBasePath }}
 
     permissions:
       actions: write
@@ -100,10 +101,13 @@ jobs :
           }
 
       - name: zip 
+        id : packageArtefact
         shell : pwsh
         run : |
           Compress-Archive -path $env:HOME/artefact -DestinationPath $env:HOME/artefact/ConsoleApp.zip
           get-childitem -path $env:HOME/artefact
+          # expand $env:HOME/
+          write-output "artfactBasePath=$env:HOME" | out-file $env:GITHUB_OUTPUT -encoding utf8 -append
 
       - name : delegated create release 
         id : delegatedCreateRelease
@@ -150,7 +154,7 @@ jobs :
           github_repository : ${{ github.repository }}
           release_id : ${{ steps.delegatedCreateRelease.outputs.release_id }}
           application_name : consoleApp
-          package_full_path : $env:HOME/artefact/ConsoleApp.zip
+          package_full_path : ${{ steps.packageArtefact.outputs.artfactBasePath }}/artefact/ConsoleApp.zip
 
       - name : check for failure
         if : ${{ failure() }}
