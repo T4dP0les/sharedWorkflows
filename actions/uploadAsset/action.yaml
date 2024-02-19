@@ -45,12 +45,12 @@ runs :
         if ([string]::IsNullOrEmpty("$env:packageLoc")) {
           # this fails at parse time
           #$packageLoc = $env:HOME/artefact/$packageName
-          write-host "null or empty $packageLoc"
+          write-host "null or empty $env:packageLoc"
           $packageLoc = /home/runner/artefact/$packageName
         } else {
-          write-host "NOT null or empty $packageLoc"
+          write-host "NOT null or empty $env:packageLoc"
         }
-        $asset = invoke-restmethod -uri $uri -method 'POST' -headers $headers -InFile $packageLoc -ContentType 'multipart/form-data' 
+        $asset = invoke-restmethod -uri $uri -method 'POST' -headers $headers -InFile $env:packageLoc -ContentType 'multipart/form-data' 
         $asset | convertto-json
       env :
         buildNumber : ${{ inputs.build_number }}
