@@ -41,7 +41,7 @@ runs :
       shell : pwsh
       run : |
         $headers = @{
-          Authorization="Bearer $authToken"
+          Authorization="Bearer $env:authToken"
         }
         $uploadURI = "$env:baseURL" -replace('api','uploads')
         $packageName = "$env:appName`.$env:buildNumber`.zip"
