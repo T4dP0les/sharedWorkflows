@@ -44,7 +44,7 @@ runs :
         $packageName = "$env:appName" + "." + "$env:buildNumber" + ".zip"
         write-host "packageName =  $packageName"
 
-        $uri = "{0}/repos/{1}/releases/{2}/assets?name={3}" -f "$uploadURI", "$env:orgRepos", "$env:releaseID", "$env:packageName" 
+        $uri = "{0}/repos/{1}/releases/{2}/assets?name={3}" -f "$uploadURI", "$env:orgRepos", "$env:releaseID", "$packageName" 
         write-output $uri
         if ([string]::IsNullOrEmpty("$env:packageLoc")) {
           # this fails at parse time
