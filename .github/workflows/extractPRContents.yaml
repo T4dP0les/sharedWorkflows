@@ -21,7 +21,9 @@ on :
       caller_github_token : 
         description : stuff
         required : true
-  
+
+permissions:
+  actions: write  
 
 env : 
   build_number : 1.0.${{ GITHUB.RUN_NUMBER }}
