@@ -29,8 +29,8 @@ inputs :
     required : false 
 
 
-permissions:
-  actions: write
+#permissions:
+#  actions: write
 
   
 runs : 
