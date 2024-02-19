@@ -57,7 +57,7 @@ jobs :
       
       - name : run composite action
         id : runCompositeAction
-        uses : T4dP0les/consoleApp/actions/getChangedFiles@main
+        uses : T4dP0les/sharedWorkflows/actions/getChangedFiles@main
 
       - name : dump env vars
         id : envVarsList
@@ -101,7 +101,7 @@ jobs :
 
       - name : delegated create release 
         id : delegatedCreateRelease
-        uses : T4dP0les/consoleApp/actions/createRelease@main
+        uses : T4dP0les/sharedWorkflows/actions/createRelease@main
         with : 
           build_number : ${{ env.build_number }}
           rest_api_auth : ${{ secrets.caller_github_token }}
@@ -136,7 +136,7 @@ jobs :
 
       - name : delegated upload to release
         id : delegatedUploadAsset
-        uses : T4dP0les/consoleApp/actions/uploadAsset@main
+        uses : T4dP0les/sharedWorkflows/actions/uploadAsset@main
         with : 
           build_number : ${{ env.build_number }}
           rest_api_auth : ${{ secrets.caller_github_token }}
