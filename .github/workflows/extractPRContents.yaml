@@ -32,7 +32,9 @@ jobs :
       createRelease : ${{ steps.runPWSH.outputs.createRelease }}
       releaseId : ${{ steps.createRelease.outputs.releaseId }}
 
-        
+    permissions:
+      actions: write
+      
     runs-on : ubuntu-latest
     steps :
       - name : checkout
