@@ -17,6 +17,12 @@ on :
         options : ['off', 'info', 'warning', 'error', 'crash']
 
   workflow_call : 
+    inputs : 
+      build_number : 
+        description : version number
+        type : string
+        required : true
+        
     secrets:
       caller_github_token : 
         description : stuff
@@ -26,7 +32,7 @@ permissions:
   actions: write  
 #permissions: write-all
 env : 
-  build_number : 1.0.${{ GITHUB.RUN_NUMBER }}
+  build_number : ${{ inputs.build_number }}
   
 jobs : 
   extractPRContents :
