@@ -153,6 +153,11 @@ jobs :
           package_full_path : $env:HOME/artefact/ConsoleApp.zip
 
       - name : upload to release
+        shell : pwsh
+        run : |
+          write-host "delegatedUploadAsset result : ${{ steps.delegatedUploadAsset.conclusion }}"
+
+      - name : upload to release
         if : ${{ steps.delegatedUploadAsset.conclusion == 'failure' }}
         id : uploadAsset
         shell : pwsh
