@@ -191,3 +191,4 @@ jobs :
         shell : pwsh
         run : |
           write-host "${{ needs.extractPRContents.outputs.createRelease }}"
+          write-host "${{ needs.extractPRContents.outputs.releaseId }}"
