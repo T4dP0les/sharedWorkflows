@@ -177,6 +177,13 @@ jobs :
           $asset = invoke-restmethod -uri $uri -method 'POST' -headers $headers -InFile $env:HOME/artefact/ConsoleApp.zip -ContentType 'multipart/form-data' 
           $asset | convertto-json
 
+      - name : display output vars
+        shell : pwsh
+        run : |
+           write-host "release id : ${{ steps.delegatedCreateRelease.outputs.release_id }}"
+           write-host "release id : ${{ jobs.extractPRContents.outputs.release_id }}"
+
+
   release :
     needs : extractPRContents
     #if : ${{ needs.extractPRContents.outputs.createRelease }}
@@ -192,4 +199,4 @@ jobs :
         shell : pwsh
         run : |
           write-host "${{ needs.extractPRContents.outputs.createRelease }}"
-          write-host "${{ steps.extractPRContents.outputs.release_id }}"
+          write-host "${{ needs.extractPRContents.outputs.release_id }}"
