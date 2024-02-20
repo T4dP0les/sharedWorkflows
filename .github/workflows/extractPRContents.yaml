@@ -178,13 +178,14 @@ jobs :
 
   release :
     needs : extractPRContents
-    if : ${{ needs.extractPRContents.outputs.createRelease }}
+    #if : ${{ needs.extractPRContents.outputs.createRelease }}
     runs-on : ubuntu-latest
     steps : 
       - name : dump file vars
         shell : pwsh
         run : |
           get-content $env:GITHUB_OUTPUT
+          get-childitem env:
     
       - name : get var from previous job
         shell : pwsh
