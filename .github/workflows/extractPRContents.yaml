@@ -181,7 +181,6 @@ jobs :
         shell : pwsh
         run : |
            write-host "release id : ${{ steps.delegatedCreateRelease.outputs.release_id }}"
-           write-host "release id : ${{ jobs.extractPRContents.outputs.release_id }}"
 
 
   release :
