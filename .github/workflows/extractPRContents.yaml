@@ -39,6 +39,7 @@ jobs :
     outputs :
       createRelease : ${{ steps.runPWSH.outputs.createRelease }}
       releaseId : ${{ steps.createRelease.outputs.releaseId }}
+      release_id : ${{ steps.delegatedCreateRelease.outputs.release_id }}
       artfactBasePath : ${{ steps.packageArtefact.outputs.artfactBasePath }}
 
     permissions:
@@ -191,4 +192,4 @@ jobs :
         shell : pwsh
         run : |
           write-host "${{ needs.extractPRContents.outputs.createRelease }}"
-          write-host "${{ needs.extractPRContents.outputs.releaseId }}"
+          write-host "${{ steps.extractPRContents.outputs.release_id }}"
